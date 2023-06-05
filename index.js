@@ -3,9 +3,13 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 // Middleware para analizar el cuerpo de las solicitudes en formato JSON
 app.use(bodyParser.json());
+
+// Habilitar CORS
+app.use(cors());
 
 // Configuración de variables de entorno
 const DB_URI = process.env.DB_URI;
