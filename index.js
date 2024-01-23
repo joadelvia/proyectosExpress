@@ -31,6 +31,7 @@ mongoose.connect(DB_URI, {
 const issueSchema = new mongoose.Schema({
   title: String,
   description: String,
+  status: { type: String, default: 'abierta' }
 });
 
 // Crear el modelo de incidencia
@@ -40,7 +41,8 @@ const Issue = mongoose.model('Issue', issueSchema);
 app.get('/api/issues', (req, res) => {
   Issue.find()
     .then(issues => {
-      res.json(issues);
+      const total = issues.length; // Nueva propiedad 'total'
+      res.json({ total, issues });
     })
     .catch(error => {
       res.status(500).json({ error: 'Error al obtener las incidencias' });
@@ -53,7 +55,7 @@ app.get('/api/issues/:id', (req, res) => {
   Issue.findById(id)
     .then(issue => {
       if (issue) {
-        res.json(issue);
+        res.json({ issue: issue});
       } else {
         res.status(404).json({ error: 'Incidencia no encontrada' });
       }
@@ -66,6 +68,9 @@ app.get('/api/issues/:id', (req, res) => {
 // Ruta para crear una nueva incidencia
 app.post('/api/issues', (req, res) => {
   const { title, description } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ error: 'Se requieren title y description para crear una incidencia'})
+  }
   const newIssue = new Issue({ title, description });
   newIssue.save()
     .then(savedIssue => {
@@ -79,8 +84,11 @@ app.post('/api/issues', (req, res) => {
 // Ruta para actualizar una incidencia existente
 app.put('/api/issues/:id', (req, res) => {
   const id = req.params.id;
-  const { title, description } = req.body;
-  Issue.findByIdAndUpdate(id, { title, description }, { new: true })
+  const { title, description, status } = req.body;
+  if (!title || !description || !status) {
+    return res.status(400).json({ error: 'Se requieren title, description y status para actualizar la incidencia' });
+  }
+  Issue.findByIdAndUpdate(id, { title, description, status }, { new: true })
     .then(updatedIssue => {
       if (updatedIssue) {
         res.json(updatedIssue);
