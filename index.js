@@ -39,9 +39,12 @@ const Issue = mongoose.model('Issue', issueSchema);
 
 // Ruta para obtener todas las incidencias
 app.get('/api/issues', (req, res) => {
-  Issue.find()
+  const { status } = req.query;
+  const filter = status ? { status } : {}; // Filtrar por estado si se proporciona el parámetro
+
+  Issue.find(filter)
     .then(issues => {
-      const total = issues.length; // Nueva propiedad 'total'
+      const total = issues.length;
       res.json({ total, issues });
     })
     .catch(error => {
